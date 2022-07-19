@@ -1,0 +1,4 @@
+build/
+lib/
+include/discord/*
+src/discord/*
