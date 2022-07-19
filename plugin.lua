@@ -1,4 +1,4 @@
-rpc = io.popen('Vim-RPC', 'w')
+rpc = io.popen('./build/Vim-RPC', 'w')
 
 local start_time = os.time(os.date("*t"))
 
