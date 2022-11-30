@@ -1,4 +1,4 @@
-rpc = io.popen('./build/Vim-RPC', 'w')
+Rpc = io.popen('../build/Vim-RPC', 'w')
 
 local start_time = os.time(os.date("*t"))
 
@@ -7,7 +7,7 @@ local function basename(path)
 end
 
 local function set_time()
-	rpc:write("start:" .. start_time, "\n")
+	Rpc:write("start:" .. start_time, "\n")
 end
 
 local available_filetypes_icon = {
@@ -241,36 +241,36 @@ local function set_buffer_state()
 	local filetype, _ = vim.bo.filetype:gsub("[^%w%s]", "_") -- Replace non-alphanumeric characters by underscores ( c++ -> c__ )
 
 	if vim.bo.buftype == "terminal" then
-		rpc:write("state:In terminal", "\n")
-		rpc:write("small_image:terminal", "\n")
-		rpc:write("small_text:" .. filename, "\n")
+		Rpc:write("state:In terminal", "\n")
+		Rpc:write("small_image:terminal", "\n")
+		Rpc:write("small_text:" .. filename, "\n")
 	elseif vim.bo.buftype == "help" then
-		rpc:write("state:Reading vim help pages", "\n")
-		rpc:write("small_image:txt", "\n")
-		rpc:write("small_text:" .. filename, "\n")
+		Rpc:write("state:Reading vim help pages", "\n")
+		Rpc:write("small_image:txt", "\n")
+		Rpc:write("small_text:" .. filename, "\n")
 	elseif vim.bo.buftype == "" then
-		rpc:write("state:Editing file " .. filename, "\n")
+		Rpc:write("state:Editing file " .. filename, "\n")
 
 		if available_filetypes_icon[vim.bo.filetype] == true then
-			rpc:write("small_image:" .. filetype, "\n")
-		else 
-			rpc:write("small_image:txt", "\n")
+			Rpc:write("small_image:" .. filetype, "\n")
+		else
+			Rpc:write("small_image:txt", "\n")
 		end
 
-		rpc:write("small_text:" .. vim.bo.filetype, "\n")
+		Rpc:write("small_text:" .. vim.bo.filetype, "\n")
 	end
 
 	-- set_time()
 
-	rpc:flush()
+	Rpc:flush()
 end
 
 local function set_project_state()
 	local dir = basename(vim.fn.getcwd()) -- Get current working directory's basename
 
-	rpc:write('details:In directory ' .. dir, "\n") 
+	Rpc:write('details:In directory ' .. dir, "\n")
 
-	rpc:flush()
+	Rpc:flush()
 end
 
 vim.api.nvim_create_autocmd({ "BufEnter" }, {
@@ -283,14 +283,14 @@ vim.api.nvim_create_autocmd({ "DirChanged" }, {
 
 vim.api.nvim_create_autocmd({"VimLeave"}, {
 	callback = function()
-		rpc:write("quit", "\n")
-		rpc:flush()
+		Rpc:write("quit", "\n")
+		Rpc:flush()
 	end
 })
 
 vim.defer_fn(function()
-	rpc:write("large_image:neovim", "\n")
-	rpc:write("large_text:The One True Text Editor", "\n")
+	Rpc:write("large_image:neovim", "\n")
+	Rpc:write("large_text:The One True Text Editor", "\n")
 
 	set_time()
 
