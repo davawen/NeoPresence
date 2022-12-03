@@ -1,4 +1,5 @@
-Rpc = io.popen('../build/Vim-RPC', 'w')
+-- Get Vim-RPC file path from current file path
+Rpc = io.popen(debug.getinfo(1).source:match("@?(.*/)") .. '../build/Vim-RPC', 'w')
 
 local start_time = os.time(os.date("*t"))
 
