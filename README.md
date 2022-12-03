@@ -1,25 +1,17 @@
-# NeoPresence
+# neo-presence
 
-Not actually usable as a plugin yet
-
-## Building
-
-### Dependencies 
-
--   [Discord Game SDK](https://discord.com/developers/docs/game-sdk/sdk-starter-guide)
-
-### Project Structure
-
-SDK's C++ includes(`*.h`) should be in `include/discord` and sources(`*.{c, cpp}`) in `src/discord`.  
-Shared library (`libdiscord_game_sdk.so`) should be in a linker accessible place (usually `/usr/lib64` or `/usr/local/lib64`)
-
-From there, build as usual CMake project:
-```sh
-$ mkdir build && cd build
-$ cmake -DCMAKE_BUILD_TYPE=Release ..
-$ make
-```
+Shows a discord presence from your Neovim!
 
 ## Using
 
-Currently needs manually requiring `plugin.lua` to work
+Add the plugin to your config using your favorite plugin manager:
+```vim
+Plug 'davawen/neo-presence', { 'do': 'bash -c \"cmake -B build . && make -C build\"' }
+````
+
+Discord's SDK will be automatically downloaded and linked.
+
+## Dependencies 
+
+-   [Discord Game SDK](https://discord.com/developers/docs/game-sdk/sdk-starter-guide)
+
