@@ -15,32 +15,57 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 set(PROJECT_NAME "Vim-RPC")
 
+set(RPC_VERSION "3.2.1")
+set(RPC_DIR "${CMAKE_SOURCE_DIR}/discord_sdk")
+
+# Create the `discord_rpc` if it isn't present
+if(NOT EXISTS ${RPC_DIR})
+	file(MAKE_DIRECTORY ${RPC_DIR})
+endif()
+
+# Download and extract the given SDK version if it isn't there
+if(NOT EXISTS "${RPC_DIR}/discord_sdk_${RPC_VERSION}.zip")
+	message(STATUS "Discord SDK not downloaded: fetching...")
+
+	file(DOWNLOAD "https://dl-game-sdk.discordapp.net/${RPC_VERSION}/discord_game_sdk.zip" "${RPC_DIR}/discord_sdk_${RPC_VERSION}.zip"
+		EXPECTED_MD5 73e5e1b3f8413a2c7184ef17476822f2
+		SHOW_PROGRESS
+	)
+
+	execute_process(
+		COMMAND bash -c "unzip -d \"${RPC_DIR}\" \"${RPC_DIR}/discord_sdk_${RPC_VERSION}.zip\""
+	)
+
+	# Add `#include <cstdint>` to `types.h` to fix broken compilation for some unknown reason
+	execute_process(
+		COMMAND bash -c "sed -i '2s/^/#include <cstdint>\\n/' \"${RPC_DIR}/cpp/types.h\""
+	)
+endif()
+
 project(${PROJECT_NAME} VERSION 1.0 LANGUAGES CXX)
 
 # Add source files
 file(GLOB_RECURSE SOURCE_FILES 
 	${CMAKE_SOURCE_DIR}/src/*.c
-	${CMAKE_SOURCE_DIR}/src/*.cpp)
+	${CMAKE_SOURCE_DIR}/src/*.cpp
+	${RPC_DIR}/cpp/*.cpp)
 
 # Add header files
 file(GLOB_RECURSE HEADER_FILES 
 	${CMAKE_SOURCE_DIR}/include/*.h
-	${CMAKE_SOURCE_DIR}/include/*.hpp)
+	${CMAKE_SOURCE_DIR}/include/*.hpp
+	${RPC_DIR}/cpp/*.h)
 
 add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES})
 
-install(TARGETS ${PROJECT_NAME}
-	DESTINATION ${CMAKE_INSTALL_PREFIX}
-)
-
 # Headers
-target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/include/discord")
+target_include_directories(${PROJECT_NAME} PRIVATE "${RPC_DIR}/cpp")
 
-# Libraries
+# Link the RPC's library through RUN_PATH
+set(CMAKE_INSTALL_RPATH "${RPC_DIR}/lib/x86_64")
 target_link_libraries(${PROJECT_NAME} PRIVATE discord_game_sdk)
 
 # Compilation
-
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")

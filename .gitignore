@@ -1,4 +1,5 @@
 build/
 lib/
-include/discord/*
-src/discord/*
+include/
+src/
+discord_sdk/
