@@ -25,7 +25,7 @@ endif()
 
 # Download and extract the given SDK version if it isn't there
 if(NOT EXISTS "${RPC_DIR}/discord_sdk_${RPC_VERSION}.zip")
-	message(STATUS "Discord SDK not downloaded: fetching...")
+	message(STATUS "Discord SDK not downloaded: fetching...\n")
 
 	file(DOWNLOAD "https://dl-game-sdk.discordapp.net/${RPC_VERSION}/discord_game_sdk.zip" "${RPC_DIR}/discord_sdk_${RPC_VERSION}.zip"
 		EXPECTED_MD5 73e5e1b3f8413a2c7184ef17476822f2
@@ -58,11 +58,13 @@ file(GLOB_RECURSE HEADER_FILES
 
 add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES})
 
-# Headers
-target_include_directories(${PROJECT_NAME} PRIVATE "${RPC_DIR}/cpp")
+# Add the library and headers of the SDK
+add_library(discord_game_sdk SHARED IMPORTED)
+set_target_properties(discord_game_sdk PROPERTIES
+	IMPORTED_LOCATION "${RPC_DIR}/lib/x86_64/discord_game_sdk.so"
+	INTERFACE_INCLUDE_DIRECTORIES "${RPC_DIR}/cpp"
+)
 
-# Link the RPC's library through RUN_PATH
-set(CMAKE_INSTALL_RPATH "${RPC_DIR}/lib/x86_64")
 target_link_libraries(${PROJECT_NAME} PRIVATE discord_game_sdk)
 
 # Compilation
