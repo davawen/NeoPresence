@@ -7,6 +7,10 @@ local function basename(path)
 	return vim.fn.fnamemodify(path, ':t')
 end
 
+local function ext(path)
+	return vim.fn.fnamemodify(path, ':e')
+end
+
 local function set_time()
 	Rpc:write("start:" .. start_time, "\n")
 end
@@ -239,7 +243,7 @@ local available_filetypes_icon = {
 
 local function set_buffer_state()
 	local filename = basename(vim.api.nvim_buf_get_name(0))
-	local filetype, _ = vim.bo.filetype:gsub("[^%w%s]", "_") -- Replace non-alphanumeric characters by underscores ( c++ -> c__ )
+	local extension = ext(vim.api.nvim_buf_get_name(0))
 
 	if vim.bo.buftype == "terminal" then
 		Rpc:write("state:In terminal", "\n")
@@ -252,8 +256,12 @@ local function set_buffer_state()
 	elseif vim.bo.buftype == "" then
 		Rpc:write("state:Editing file " .. filename, "\n")
 
-		if available_filetypes_icon[vim.bo.filetype] == true then
-			Rpc:write("small_image:" .. filetype, "\n")
+		if available_filetypes_icon[extension] == true then
+			local cleaned_extension = extension:gsub("[^%w%s]", "_")
+			Rpc:write("small_image:" .. cleaned_extension, "\n")
+		elseif available_filetypes_icon[vim.bo.filetype] == true then
+			local cleaned_filetype, _ = vim.bo.filetype:gsub("[^%w%s]", "_") -- Replace non-alphanumeric characters by underscores ( c++ -> c__ )
+			Rpc:write("small_image:" .. cleaned_filetype, "\n")
 		else
 			Rpc:write("small_image:txt", "\n")
 		end
