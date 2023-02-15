@@ -5,7 +5,12 @@
 #include <optional>
 #include <variant>
 #include <sys/select.h>
+
+#if __has_include(<unistd.h>)
 #include <unistd.h>
+#else
+#include <Windows.h>
+#endif
 
 #include "discord.h"
 
@@ -24,6 +29,14 @@ enum Command {
 	SmallImage,
 	SmallText
 };
+
+int get_processid() {
+#if __has_include(<unistd.h>)
+	return getpid();
+#else
+	return GetCurrentProcessId();
+#endif
+}
 
 using command_t = std::pair<Command, std::variant<std::monostate, long, std::string>>;
 command_t parse_command(const std::string &command) {
@@ -82,7 +95,7 @@ int main(int, char **) {
 	if(result != discord::Result::Ok) return -1;
 
 	char filename[128];
-	std::snprintf(filename, 128, "/tmp/vim_rpc_%i_log", getpid());
+	std::snprintf(filename, 128, "/tmp/vim_rpc_%i_log", get_processid());
 	auto error_file = std::fopen(filename, "w");
 	auto activity = discord::Activity();
 
