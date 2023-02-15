@@ -5,6 +5,7 @@
 #include <optional>
 #include <variant>
 #include <sys/select.h>
+#include <unistd.h>
 
 #include "discord.h"
 
@@ -80,11 +81,14 @@ int main(int, char **) {
 
 	if(result != discord::Result::Ok) return -1;
 
+	char filename[128];
+	std::snprintf(filename, 128, "/tmp/vim_rpc_%i_log", getpid());
+	auto error_file = std::fopen(filename, "w");
 	auto activity = discord::Activity();
 
-	auto activity_callback = [](discord::Result result) -> void {
+	auto activity_callback = [&error_file](discord::Result result) -> void {
 		if(result != discord::Result::Ok)
-			std::cerr << "error setting activity: " << (int)result << "\n";
+			fprintf(error_file, "error setting activity: %i\n", (int)result);
 	};
 
 	// core->ActivityManager().UpdateActivity(activity, activity_callback);
@@ -151,7 +155,12 @@ int main(int, char **) {
 		// std::this_thread::sleep_for(1s);
 	}
 
-core->ActivityManager().ClearActivity(nullptr);
+	core->ActivityManager().ClearActivity([&error_file](discord::Result r) {
+		if(r != discord::Result::Ok) {
+			fprintf(error_file, "Exited Vim-RPC with an error: %i\n", (int)r);
+		}
+	});
+	fclose(error_file);
 
 	return 0;
 }
